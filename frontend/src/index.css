@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Optional custom overrides */
+body {
+  margin: 0;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  background-color: #0d0c15;
+  color: #f3f4f6;
+  overflow-x: hidden;
+}
