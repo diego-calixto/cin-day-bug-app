@@ -50,34 +50,40 @@ def test_submit_bug_report_and_scoring():
     player_id = reg_res.json()["id"]
 
     # 2. Submit bug report
+    # Base easy (100) + Quality bonus (100 - keywords: negative, price) + Time remaining (120 * 2 = 240) + Streak (0) = 440 points
     rep_res = client.post("/api/bug_reports", json={
         "player_id": player_id,
-        "bug_id": "bug_negative_price",
-        "title": "Negative price found",
-        "description": "The product has a negative price in the catalog."
+        "bug_id": "bug_price",
+        "title": "Negative price issue",
+        "description": "The product has a negative price in the catalog.",
+        "seconds_remaining": 120,
+        "streak_count": 1
     })
     assert rep_res.status_code == 200
     rep_data = rep_res.json()
     assert rep_data["success"] is True
-    assert rep_data["score"] == 1
+    assert rep_data["score"] == 440
+    assert rep_data["points_added"] == 440
 
     # 3. Double-check player score is updated
     p_res = client.get(f"/api/players/{player_id}")
-    assert p_res.json()["score"] == 1
+    assert p_res.json()["score"] == 440
 
     # 4. Submit duplicate report (anti-spam test)
     dup_res = client.post("/api/bug_reports", json={
         "player_id": player_id,
-        "bug_id": "bug_negative_price",
+        "bug_id": "bug_price",
         "title": "Negative price found again",
-        "description": "The product has a negative price in the catalog."
+        "description": "The product has a negative price in the catalog.",
+        "seconds_remaining": 110,
+        "streak_count": 1
     })
     assert dup_res.status_code == 400
     assert "already reported" in dup_res.json()["detail"]
     
-    # Player score should remain 1
+    # Player score should remain 440
     p_res2 = client.get(f"/api/players/{player_id}")
-    assert p_res2.json()["score"] == 1
+    assert p_res2.json()["score"] == 440
 
 def test_end_session_block_reports():
     # 1. Register player
@@ -97,7 +103,9 @@ def test_end_session_block_reports():
         "player_id": player_id,
         "bug_id": "bug_layout",
         "title": "Overlapping layout buttons",
-        "description": "The button is overlapping text inside cart."
+        "description": "The button is overlapping text inside cart.",
+        "seconds_remaining": 100,
+        "streak_count": 1
     })
     assert rep_res.status_code == 400
     assert "session already ended" in rep_res.json()["detail"]
@@ -110,25 +118,63 @@ def test_leaderboard():
 
     # Submit bugs
     # Player 3 reports 2 bugs
+    # Bug 1: Base easy (100) + Quality bonus (100 - keywords: negative, price) + Time remaining (120 * 2 = 240) = 440 points
     client.post("/api/bug_reports", json={
-        "player_id": p3, "bug_id": "b1", "title": "Bug Title 1", "description": "Description minimum 10 chars"
+        "player_id": p3,
+        "bug_id": "bug_price",
+        "title": "Negative Price on Moto G Power",
+        "description": "The product has a negative price in the catalog.",
+        "seconds_remaining": 120,
+        "streak_count": 1
     })
+    # Bug 2: Base easy (100) + Quality bonus (100 - keywords: html, tag) + Time remaining (100 * 2 = 200) + Streak 2 (50) = 450 points
+    # Total P3 Score: 440 + 450 = 890 points
     client.post("/api/bug_reports", json={
-        "player_id": p3, "bug_id": "b2", "title": "Bug Title 2", "description": "Description minimum 10 chars"
+        "player_id": p3,
+        "bug_id": "bug_text",
+        "title": "Broken HTML in Description",
+        "description": "I found raw html tags in the description.",
+        "seconds_remaining": 100,
+        "streak_count": 2
     })
 
     # Player 1 reports 1 bug
+    # Bug 1: Base easy (100) + Quality bonus (100) + Time remaining (60 * 2 = 120) = 320 points
+    # Total P1 Score: 320 points
     client.post("/api/bug_reports", json={
-        "player_id": p1, "bug_id": "b1", "title": "Bug Title 1", "description": "Description minimum 10 chars"
+        "player_id": p1,
+        "bug_id": "bug_price",
+        "title": "Negative Price on Moto G Power",
+        "description": "The product has a negative price in the catalog.",
+        "seconds_remaining": 60,
+        "streak_count": 1
     })
 
     # Fetch leaderboard
     leaderboard = client.get("/api/players/top10").json()
     assert len(leaderboard) == 3
-    # Sorted by score descending: p3 (2 score) -> p1 (1 score) -> p2 (0 score)
+    # Sorted by score descending: p3 (890 points) -> p1 (320 points) -> p2 (0 points)
     assert leaderboard[0]["id"] == p3
-    assert leaderboard[0]["score"] == 2
+    assert leaderboard[0]["score"] == 890
     assert leaderboard[1]["id"] == p1
-    assert leaderboard[1]["score"] == 1
+    assert leaderboard[1]["score"] == 320
     assert leaderboard[2]["id"] == p2
     assert leaderboard[2]["score"] == 0
+
+def test_submit_bug_image():
+    # 1. Register player
+    reg_res = client.post("/api/players", json={"name": "Diana"})
+    player_id = reg_res.json()["id"]
+
+    # 2. Submit bug_image report
+    # Base easy (100) + Quality bonus (100 - keywords: image, loading) + Time remaining (80 * 2 = 160) = 360 points
+    rep_res = client.post("/api/bug_reports", json={
+        "player_id": player_id,
+        "bug_id": "bug_image",
+        "title": "Broken charger photo",
+        "description": "The image of the charger is missing or not loading.",
+        "seconds_remaining": 80,
+        "streak_count": 1
+    })
+    assert rep_res.status_code == 200
+    assert rep_res.json()["score"] == 360

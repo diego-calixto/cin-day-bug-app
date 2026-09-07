@@ -19,7 +19,7 @@ from .database import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("cin-day-backend")
 
-app = FastAPI(title="CIN-DAY Motorola Challenge Backend")
+app = FastAPI(title="Cin Open Day Motorola Challenge Backend")
 
 # Enable CORS for frontend accessibility from any local or web IP
 app.add_middleware(
@@ -43,8 +43,10 @@ class PlayerCreate(BaseModel):
 class BugReportCreate(BaseModel):
     player_id: str
     bug_id: str
-    title: str = Field(..., min_length=3)
-    description: str = Field(..., min_length=10)
+    title: str = Field(..., min_length=5)
+    description: str = Field(..., min_length=15)
+    seconds_remaining: int
+    streak_count: int
 
 # Real-time WebSocket Leaderboard Manager
 class ConnectionManager:
@@ -152,12 +154,14 @@ async def end_session(player_id: str):
 @app.post("/api/bug_reports")
 async def submit_bug_report(report_in: BugReportCreate):
     report_id = str(uuid.uuid4())
-    success, score, msg = add_bug_report(
+    success, score, points_added, msg = add_bug_report(
         report_id,
         report_in.player_id,
         report_in.bug_id,
         report_in.title.strip(),
-        report_in.description.strip()
+        report_in.description.strip(),
+        report_in.seconds_remaining,
+        report_in.streak_count
     )
     
     if not success:
@@ -169,7 +173,7 @@ async def submit_bug_report(report_in: BugReportCreate):
     
     # Broadcast leaderboard since a score changed!
     await manager.broadcast_leaderboard()
-    return {"success": True, "score": score, "message": msg}
+    return {"success": True, "score": score, "points_added": points_added, "message": msg}
 
 # --- WebSocket Leaderboard Endpoint ---
 
