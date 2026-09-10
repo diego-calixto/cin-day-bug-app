@@ -92,10 +92,10 @@ export default function App() {
     window.addEventListener('hashchange', handleLocationChange);
 
     // Restore player session if they refreshed
-    const cachedId = localStorage.getItem('moto_player_id');
-    const cachedName = localStorage.getItem('moto_player_name');
-    const cachedBugs = localStorage.getItem('moto_bugs_found');
-    const cachedEnded = localStorage.getItem('moto_session_ended');
+    const cachedId = sessionStorage.getItem('moto_player_id');
+    const cachedName = sessionStorage.getItem('moto_player_name');
+    const cachedBugs = sessionStorage.getItem('moto_bugs_found');
+    const cachedEnded = sessionStorage.getItem('moto_session_ended');
 
     if (cachedId && cachedName) {
       setPlayerId(cachedId);
@@ -110,7 +110,7 @@ export default function App() {
         setScreen('game_over');
       } else {
         // Calculate remaining time from storage if we have a started timestamp
-        const startTime = localStorage.getItem('moto_session_start_time');
+        const startTime = sessionStorage.getItem('moto_session_start_time');
         if (startTime) {
           const elapsed = Math.floor((Date.now() - parseInt(startTime, 10)) / 1000);
           const remaining = 120 - elapsed;
@@ -136,8 +136,8 @@ export default function App() {
   // 2. Timer Countdown Hook
   useEffect(() => {
     if (screen === 'game' && !sessionEnded && !showLeaderboard) {
-      if (!localStorage.getItem('moto_session_start_time')) {
-        localStorage.setItem('moto_session_start_time', Date.now().toString());
+      if (!sessionStorage.getItem('moto_session_start_time')) {
+        sessionStorage.setItem('moto_session_start_time', Date.now().toString());
       }
 
       timerRef.current = setInterval(() => {
@@ -294,10 +294,10 @@ export default function App() {
   };
 
   const initializeSession = (id: string, name: string, isOffline = false) => {
-    localStorage.clear(); // Clear old runs
-    localStorage.setItem('moto_player_id', id);
-    localStorage.setItem('moto_player_name', name);
-    localStorage.setItem('moto_session_start_time', Date.now().toString());
+    sessionStorage.clear(); // Clear old runs
+    sessionStorage.setItem('moto_player_id', id);
+    sessionStorage.setItem('moto_player_name', name);
+    sessionStorage.setItem('moto_session_start_time', Date.now().toString());
     
     setPlayerId(id);
     setPlayerName(name);
@@ -399,7 +399,7 @@ export default function App() {
       const addedPoints = calculateLocalScore(reportingBugId!, modalDescription.trim(), timeLeft, newStreak);
       const newTotalScore = score + addedPoints;
       setScore(newTotalScore);
-      localStorage.setItem('moto_bugs_found', JSON.stringify(updatedBugs));
+      sessionStorage.setItem('moto_bugs_found', JSON.stringify(updatedBugs));
       
       showToast(`Bug relatado localmente! +${addedPoints} Pontos`, "success");
       setLastReportTime(now);
@@ -428,7 +428,7 @@ export default function App() {
         const updatedBugs = [...bugsFound, reportingBugId!];
         setBugsFound(updatedBugs);
         setScore(data.score || updatedBugs.length);
-        localStorage.setItem('moto_bugs_found', JSON.stringify(updatedBugs));
+        sessionStorage.setItem('moto_bugs_found', JSON.stringify(updatedBugs));
         
         showToast(`Bug verificado com sucesso! +${data.points_added || 1} Pontos`, "success");
         setLastReportTime(now);
@@ -446,7 +446,7 @@ export default function App() {
       const addedPoints = calculateLocalScore(reportingBugId!, modalDescription.trim(), timeLeft, newStreak);
       const newTotalScore = score + addedPoints;
       setScore(newTotalScore);
-      localStorage.setItem('moto_bugs_found', JSON.stringify(updatedBugs));
+      sessionStorage.setItem('moto_bugs_found', JSON.stringify(updatedBugs));
       setLastReportTime(now);
       setCurrentStreak(newStreak);
       setReportingBugId(null);
@@ -458,7 +458,7 @@ export default function App() {
   // 7. Action: Timer End / Session Completion (FR02)
   const handleGameOver = async (id: string, finalScore: number) => {
     setSessionEnded(true);
-    localStorage.setItem('moto_session_ended', 'true');
+    sessionStorage.setItem('moto_session_ended', 'true');
     setScreen('game_over');
 
     // Trigger confetti on high success!
@@ -485,7 +485,7 @@ export default function App() {
 
   // Reset/Restart Game Session
   const handleResetChallenge = () => {
-    localStorage.clear();
+    sessionStorage.clear();
     setScreen('register');
     setPlayerName('');
     setPlayerId('');

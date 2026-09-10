@@ -4,6 +4,11 @@ from datetime import datetime
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "cin_day.db")
 
+# Vercel serverless environments have a read-only filesystem.
+# If running on Vercel or if the current folder is not writable, fallback to /tmp/cin_day.db
+if os.environ.get("VERCEL") or not os.access(os.path.dirname(__file__), os.W_OK):
+    DB_PATH = "/tmp/cin_day.db"
+
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row

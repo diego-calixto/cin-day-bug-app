@@ -1,6 +1,7 @@
 import uuid
 import json
 import logging
+import os
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -21,11 +22,31 @@ logger = logging.getLogger("cin-day-backend")
 
 app = FastAPI(title="Cin Open Day Motorola Challenge Backend")
 
-# Enable CORS for frontend accessibility from any local or web IP
+# Configure CORS for local development and deployed frontend URLs
+allowed_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+# Add custom frontend URLs (e.g. from Vercel) if configured in ALLOWED_ORIGINS env variable
+env_origins = os.environ.get("ALLOWED_ORIGINS")
+if env_origins:
+    allowed_origins.extend([origin.strip() for origin in env_origins.split(",") if origin.strip()])
+else:
+    # If no specific production origins are defined, default to wildcard for easy out-of-the-box access
+    allowed_origins = ["*"]
+
+# Starlette/FastAPI's CORSMiddleware requires allow_credentials to be False if allow_origins includes "*"
+allow_credentials = True
+if "*" in allowed_origins:
+    allow_credentials = False
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=allowed_origins,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
