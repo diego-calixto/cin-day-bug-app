@@ -7,14 +7,24 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List, Set
 
-from .database import (
-    init_db,
-    create_player,
-    get_player,
-    end_player_session,
-    add_bug_report,
-    get_top_10
-)
+try:
+    from .database import (
+        init_db,
+        create_player,
+        get_player,
+        end_player_session,
+        add_bug_report,
+        get_top_10
+    )
+except ImportError:
+    from database import (
+        init_db,
+        create_player,
+        get_player,
+        end_player_session,
+        add_bug_report,
+        get_top_10
+    )
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
