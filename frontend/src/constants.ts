@@ -1,6 +1,6 @@
 // Connection URLs with fallbacks
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cin-day-bug-app-dr68.vercel.app';
-export const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'wss://cin-day-bug-app-dr68.vercel.app/ws/leaderboard';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cin-day-bug-app.onrender.com';
+export const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'wss://cin-day-bug-app.onrender.com/ws/leaderboard';
 
 export interface Bug {
   id: string;
