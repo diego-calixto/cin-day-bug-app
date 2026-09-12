@@ -44,7 +44,7 @@ export default function App() {
   const [sessionEnded, setSessionEnded] = useState<boolean>(false);
 
   // Game timer
-  const [timeLeft, setTimeLeft] = useState<number>(120); // 2 minutes
+  const [timeLeft, setTimeLeft] = useState<number>(240); // 4 minutes
 
   // Store layout states
   const [activeCategory, setActiveCategory] = useState<'all' | 'premium' | 'intermediate' | 'accessories'>('all');
@@ -63,6 +63,8 @@ export default function App() {
   // Desktop Leaderboard screen states
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [pollingActive, setPollingActive] = useState<boolean>(false);
+  const [isClearConfirmOpen, setIsClearConfirmOpen] = useState<boolean>(false);
+  const [isClearingLeaderboard, setIsClearingLeaderboard] = useState<boolean>(false);
 
   // Toast notification
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -113,7 +115,7 @@ export default function App() {
         const startTime = sessionStorage.getItem('moto_session_start_time');
         if (startTime) {
           const elapsed = Math.floor((Date.now() - parseInt(startTime, 10)) / 1000);
-          const remaining = 120 - elapsed;
+          const remaining = 240 - elapsed;
           if (remaining > 0) {
             setTimeLeft(remaining);
             setScreen('game');
@@ -245,11 +247,37 @@ export default function App() {
     }
   };
 
+  const handleClearLeaderboard = async () => {
+    try {
+      setIsClearingLeaderboard(true);
+      const res = await fetch(`${API_BASE_URL}/api/leaderboard/clear`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        showToast("Placar limpo com sucesso!", "success");
+        setLeaderboard([]);
+      } else {
+        const data = await res.json();
+        showToast(`Erro ao limpar placar: ${data.detail || 'Erro desconhecido'}`, "error");
+      }
+    } catch (err) {
+      showToast("Não foi possível conectar ao servidor para limpar o placar.", "error");
+    } finally {
+      setIsClearingLeaderboard(false);
+      setIsClearConfirmOpen(false);
+    }
+  };
+
   // Helper: Format timer
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Helper: Format currency to BRL (comma separated)
+  const formatCurrency = (value: number) => {
+    return `R$ ${value.toFixed(2).replace('.', ',')}`;
   };
 
   // Helper: Show Toasts
@@ -304,7 +332,7 @@ export default function App() {
     setBugsFound([]);
     setScore(0);
     setCart({});
-    setTimeLeft(120);
+    setTimeLeft(240);
     setSessionEnded(false);
     setOfflineMode(isOffline);
 
@@ -492,7 +520,7 @@ export default function App() {
     setScore(0);
     setBugsFound([]);
     setCart({});
-    setTimeLeft(120);
+    setTimeLeft(240);
     setSessionEnded(false);
     setLastReportTime(null);
     setCurrentStreak(0);
@@ -591,29 +619,38 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-6 bg-slate-900/40 px-5 py-2.5 rounded-2xl border border-white/5 backdrop-blur-md shadow-inner">
-            <div className="flex items-center gap-2">
-              {wsConnected ? (
-                <>
-                  <span className="relative flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                  </span>
-                  <span className="text-xs font-semibold text-emerald-400 uppercase tracking-widest flex items-center gap-1">
-                    <Wifi className="w-4 h-4" /> Sincronização ao Vivo
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="relative flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
-                  </span>
-                  <span className="text-xs font-semibold text-amber-400 uppercase tracking-widest flex items-center gap-1">
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Polling REST
-                  </span>
-                </>
-              )}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsClearConfirmOpen(true)}
+              className="px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-rose-500/5 active:scale-95"
+            >
+              <Trash2 className="w-4 h-4" /> Limpar Placar
+            </button>
+
+            <div className="flex items-center gap-6 bg-slate-900/40 px-5 py-2.5 rounded-2xl border border-white/5 backdrop-blur-md shadow-inner">
+              <div className="flex items-center gap-2">
+                {wsConnected ? (
+                  <>
+                    <span className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                    </span>
+                    <span className="text-xs font-semibold text-emerald-400 uppercase tracking-widest flex items-center gap-1">
+                      <Wifi className="w-4 h-4" /> Sincronização ao Vivo
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                    </span>
+                    <span className="text-xs font-semibold text-amber-400 uppercase tracking-widest flex items-center gap-1">
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Polling REST
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -713,6 +750,63 @@ export default function App() {
             </div>
           </div>
         </div>
+
+        {/* Floating toast alerts */}
+        {toast && (
+          <div className={`fixed top-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-6 py-3.5 rounded-2xl border shadow-2xl animate-bounce ${
+            toast.type === 'success' ? 'bg-emerald-950/90 border-emerald-500/30 text-emerald-200' :
+            toast.type === 'error' ? 'bg-rose-950/90 border-rose-500/30 text-rose-200' :
+            'bg-slate-950/90 border-slate-500/30 text-slate-200'
+          }`}>
+            {toast.type === 'success' ? <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" /> :
+             toast.type === 'error' ? <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0" /> :
+             <BugIcon className="w-5 h-5 text-cyan-400 shrink-0" />}
+            <span className="text-sm font-bold tracking-wide">{toast.message}</span>
+          </div>
+        )}
+
+        {/* CLEAR LEADERBOARD CONFIRMATION MODAL */}
+        {isClearConfirmOpen && (
+          <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-sm bg-slate-900 rounded-3xl border border-rose-500/30 shadow-2xl overflow-hidden relative animate-bounce-in">
+              <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-rose-600 via-red-500 to-orange-500" />
+              
+              <div className="p-5 border-b border-white/5 flex items-center gap-3">
+                <div className="p-2.5 bg-rose-500/15 rounded-2xl text-rose-400">
+                  <Trash2 className="w-5 h-5 animate-pulse" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-extrabold text-white uppercase tracking-wider">Limpar o Placar?</h4>
+                  <p className="text-[10px] text-slate-500 font-bold">Esta ação é irreversível.</p>
+                </div>
+              </div>
+
+              <div className="p-5 space-y-4">
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Tem certeza de que deseja deletar todos os jogadores e relatórios de bugs? Todos os dados atuais do ranking serão apagados definitivamente.
+                </p>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsClearConfirmOpen(false)}
+                    className="flex-1 bg-white/5 hover:bg-white/10 text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isClearingLeaderboard}
+                    onClick={handleClearLeaderboard}
+                    className="flex-1 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white py-3.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {isClearingLeaderboard ? "Limpando..." : "Sim, Limpar Tudo"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -762,10 +856,10 @@ export default function App() {
                 <h3 className="text-sm font-extrabold text-violet-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-violet-400" /> Regras do Desafio:
                 </h3>
-                <ul className="text-xs text-slate-300 space-y-2.5">
+                <ul className="text-sm text-slate-300 space-y-2.5 leading-relaxed">
                   <li className="flex items-start gap-2">
                     <span className="mt-0.5 text-cyan-400 font-bold">1.</span>
-                    <span>Você tem <strong>2 minutos (02:00)</strong> para explorar um catálogo simulado de e-commerce da Motorola.</span>
+                    <span>Você tem <strong>4 minutos (04:00)</strong> para explorar um catálogo simulado de e-commerce da Motorola.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="mt-0.5 text-cyan-400 font-bold">2.</span>
@@ -854,7 +948,7 @@ export default function App() {
                 <div className="bg-gradient-to-r from-violet-900/50 via-indigo-900/30 to-cyan-950/40 rounded-2xl p-4 border border-white/5 relative overflow-hidden">
                 <div className="absolute right-[-10%] top-[-30%] w-32 h-32 bg-violet-500/10 rounded-full blur-2xl" />
                 <h3 className="text-sm font-black tracking-tight text-white mb-1 uppercase">VENDA EXCLUSIVA DO STAND</h3>
-                <p className="text-[11px] text-slate-300 leading-relaxed max-w-[80%] mb-2">
+                <p className="text-sm text-slate-300 leading-relaxed max-w-[80%] mb-2">
                   Encontre discrepâncias de código ocultas neste processo de checkout em tempo real. Teste com atenção!
                 </p>
                 <div className="inline-block text-[9px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-950/60 border border-cyan-800/30 px-2.5 py-0.5 rounded-full">
@@ -935,7 +1029,7 @@ export default function App() {
                           </h4>
 
                           {/* Product Description with seed D (Corrupted Text) */}
-                          <div className={`text-[10px] text-slate-400 leading-relaxed min-h-[30px] ${isBugText ? "" : "line-clamp-2"}`}>
+                          <div className={`text-sm text-slate-400 leading-relaxed min-h-[30px] ${isBugText ? "" : "line-clamp-2"}`}>
                             {isBugText ? (
                               <div 
                                 onClick={(e) => {
@@ -963,18 +1057,18 @@ export default function App() {
                                 }}
                                 className="cursor-pointer w-full"
                               >
-                                <span className="text-xs text-slate-500 line-through block font-mono">$299.99</span>
-                                <span className="text-sm font-black text-cyan-300 block">-$999.00</span>
+                                <span className="text-xs text-slate-500 line-through block font-mono">R$ 299,99</span>
+                                <span className="text-sm font-black text-cyan-300 block">-R$ 999,00</span>
                               </div>
                             ) : (
                               <div>
                                 {prod.originalPrice && (
                                   <span className="text-[10px] text-slate-500 line-through block font-mono">
-                                    ${prod.originalPrice.toFixed(2)}
+                                    {formatCurrency(prod.originalPrice)}
                                   </span>
                                 )}
                                 <span className="text-sm font-black text-cyan-300 font-mono">
-                                  ${prod.price.toFixed(2)}
+                                  {formatCurrency(prod.price)}
                                 </span>
                               </div>
                             )}
@@ -1059,7 +1153,7 @@ export default function App() {
                               <div>
                                 <h4 className="text-xs font-bold text-white max-w-[150px] truncate">{prod.name}</h4>
                                 <span className={`text-xs font-mono font-black ${prod.price < 0 ? 'text-rose-400' : 'text-cyan-300'}`}>
-                                  ${prod.price.toFixed(2)}
+                                  {formatCurrency(prod.price)}
                                 </span>
                               </div>
                             </div>
@@ -1122,7 +1216,7 @@ export default function App() {
                       <div className="flex justify-between items-center">
                         <span className="text-xs font-extrabold text-white uppercase tracking-wider">Subtotal:</span>
                         <span className={`text-lg font-mono font-black ${cartTotal < 0 ? 'text-rose-400' : 'text-cyan-300'}`}>
-                          ${cartTotal.toFixed(2)}
+                          {formatCurrency(cartTotal)}
                         </span>
                       </div>
 
@@ -1146,7 +1240,7 @@ export default function App() {
                         }
                       }}
                       className="w-full bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-black py-3.5 rounded-xl text-xs font-extrabold uppercase tracking-widest flex items-center justify-center gap-1.5 shadow-lg active:scale-95 transition-all cursor-pointer relative"
-                      style={{ marginTop: '-36px' }} // Seed B: Overlaps total above!
+                      style={{ marginTop: '-28px' }} // Seed B: Overlaps total above!
                     >
                       Finalizar Compra
                     </button>
@@ -1290,7 +1384,7 @@ export default function App() {
                 </div>
 
                 {/* Rank Feedback */}
-                <p className="text-xs font-semibold text-slate-300 leading-relaxed px-4">
+                <p className="text-sm font-semibold text-slate-300 leading-relaxed px-4">
                   {bugsFound.length === 6 ? "🏆 Lenda Absoluta! Trabalho excelente, você encontrou todos os erros!" :
                    bugsFound.length >= 4 ? "👏 Incríveis habilidades de QA! Você capturou a maioria dos erros do nosso desenvolvedor!" :
                    bugsFound.length >= 1 ? "👍 Bom esforço! Você capturou com sucesso alguns problemas difíceis!" :

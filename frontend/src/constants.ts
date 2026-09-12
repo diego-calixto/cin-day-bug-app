@@ -12,7 +12,7 @@ export const BUGS: Record<string, Bug> = {
   bug_price: {
     id: "bug_price",
     titleDefault: "Preço Negativo no Moto G Power",
-    descriptionDefault: "O Moto G Power está listado no catálogo com um preço negativo de -$999.00."
+    descriptionDefault: "O Moto G Power está listado no catálogo com um preço negativo de -R$999,00."
   },
   bug_layout: {
     id: "bug_layout",
@@ -101,29 +101,29 @@ export interface Product {
 export const PRODUCTS: Product[] = [
   {
     id: "moto_razr",
-    name: "Motorola Razr 50 Ultra",
+    name: "Motorola Razr 60",
     price: 999.99,
     originalPrice: 1099.99,
-    image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    image: "https://m.media-amazon.com/images/I/61G1x4+IXTL._AC_UF1000,1000_QL80_.jpg",
     category: "premium",
-    description: "Experimente o pico absoluto de design compacto com uma tela externa massiva. &lt;div class='text-red-500 font-bold'&gt;&lt;script&gt;alert('corrupted')&lt;/script&gt;&lt;/div&gt; &Aacute;  Taxa de atualização ultra-rápida de 165Hz.",
+    description: "&lt;div class='text-red-500 font-bold'&gt;&lt;script&gt;alert('corrupted')&lt;/script&gt;&lt;/div&gt; &Aacute;",
     specs: ["12GB RAM", "512GB Armazenamento", "Câmera Dupla de 50MP"]
   },
   {
     id: "moto_edge_pro",
-    name: "Motorola Edge 50 Ultra",
+    name: "Motorola Edge 70",
     price: 849.00,
-    image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    image: "https://m.media-amazon.com/images/I/615ojDU7zSL.jpg",
     category: "premium",
     description: "Esmaecendo a linha entre arte e tecnologia. Cores certificadas pela Pantone e traseira em couro vegano premium.",
     specs: ["16GB RAM", "1TB Armazenamento", "Zoom Periscópio de 64MP"]
   },
   {
     id: "moto_g_power",
-    name: "Moto G Power 5G (2026)",
+    name: "Moto G75 5G",
     price: -999.00,
     originalPrice: 299.99,
-    image: "https://images.unsplash.com/photo-1565630916779-e303be97b6f5?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    image: "https://americanas.vtexassets.com/arquivos/ids/30033529/7510905061_1SZ.jpg?v=638840587672730000",
     category: "intermediate",
     description: "Incrível duração de bateria de dois dias com conectividade 5G ultrarrápida. Agora com um lindo acabamento que imita couro.",
     specs: ["8GB RAM", "128GB Armazenamento", "Bateria de 5000mAh"]
@@ -132,7 +132,7 @@ export const PRODUCTS: Product[] = [
     id: "moto_g_stylus",
     name: "Moto G Stylus 5G",
     price: 349.99,
-    image: "https://images.unsplash.com/photo-1573148195900-7845dcb9b127?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    image: "https://http2.mlstatic.com/D_NQ_NP_808444-CBT113517505813_062026-O.webp",
     category: "intermediate",
     description: "Expresse sua criatividade com a caneta stylus integrada. Perfeito para anotações rápidas, edições de precisão e navegação contínua.",
     specs: ["8GB RAM", "256GB Armazenamento", "Caneta Stylus Integrada"]
@@ -141,7 +141,7 @@ export const PRODUCTS: Product[] = [
     id: "moto_buds",
     name: "Moto Buds+ (Som Bose)",
     price: 129.99,
-    image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    image: "https://m.media-amazon.com/images/I/61Air9l4A2L._AC_UF1000,1000_QL80_.jpg",
     category: "accessories",
     description: "Fones de ouvido premium criados em parceria com a Bose. Áudio de alta resolução com Cancelamento Ativo de Ruído e suporte a Dolby Atmos.",
     specs: ["Ajuste de Som Bose", "Áudio de Alta Resolução", "Rastreamento Dolby Atmos"]

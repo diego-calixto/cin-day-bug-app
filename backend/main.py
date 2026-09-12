@@ -14,7 +14,8 @@ try:
         get_player,
         end_player_session,
         add_bug_report,
-        get_top_10
+        get_top_10,
+        clear_leaderboard_db
     )
 except ImportError:
     from database import (
@@ -23,7 +24,8 @@ except ImportError:
         get_player,
         end_player_session,
         add_bug_report,
-        get_top_10
+        get_top_10,
+        clear_leaderboard_db
     )
 
 # Setup logging
@@ -136,6 +138,20 @@ async def get_leaderboard_rest():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve leaderboard."
+        )
+
+@app.post("/api/leaderboard/clear")
+async def clear_leaderboard_endpoint():
+    """Clear all records on the leaderboard."""
+    try:
+        clear_leaderboard_db()
+        await manager.broadcast_leaderboard()
+        return {"success": True, "message": "Leaderboard cleared successfully."}
+    except Exception as e:
+        logger.error(f"Error clearing leaderboard: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to clear leaderboard."
         )
 
 @app.post("/api/players", status_code=status.HTTP_201_CREATED)

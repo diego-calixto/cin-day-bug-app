@@ -218,3 +218,12 @@ def get_top_10() -> list[dict]:
             d["session_ended"] = bool(d["session_ended"])
             result.append(d)
         return result
+
+def clear_leaderboard_db() -> bool:
+    """Deletes all players and bug_reports to reset the leaderboard."""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM bug_reports")
+        cursor.execute("DELETE FROM players")
+        conn.commit()
+        return True

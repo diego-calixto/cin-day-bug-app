@@ -178,3 +178,30 @@ def test_submit_bug_image():
     })
     assert rep_res.status_code == 200
     assert rep_res.json()["score"] == 360
+
+def test_clear_leaderboard():
+    # 1. Register player
+    p = client.post("/api/players", json={"name": "Alice"}).json()["id"]
+
+    # 2. Submit bug
+    client.post("/api/bug_reports", json={
+        "player_id": p,
+        "bug_id": "bug_price",
+        "title": "Negative Price on Moto G Power",
+        "description": "The product has a negative price in the catalog.",
+        "seconds_remaining": 120,
+        "streak_count": 1
+    })
+
+    # Verify there is 1 player on the leaderboard
+    leaderboard_before = client.get("/api/players/top10").json()
+    assert len(leaderboard_before) == 1
+
+    # 3. Clear leaderboard
+    clear_res = client.post("/api/leaderboard/clear")
+    assert clear_res.status_code == 200
+    assert clear_res.json()["success"] is True
+
+    # Verify leaderboard is now empty
+    leaderboard_after = client.get("/api/players/top10").json()
+    assert len(leaderboard_after) == 0
